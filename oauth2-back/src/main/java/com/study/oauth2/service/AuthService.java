@@ -1,10 +1,10 @@
 package com.study.oauth2.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -12,7 +12,9 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import com.study.oauth2.dto.auth.OAuth2ProviderMergeReqDto;
 import com.study.oauth2.dto.auth.OAuth2RegisterReqDto;
 import com.study.oauth2.entity.Authority;
 import com.study.oauth2.entity.User;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 	
 	private final UserRepository userRepository;
+	
 
 	@Override
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -33,6 +36,8 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
 		OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = new DefaultOAuth2UserService();
 		
 		OAuth2User oAuth2User = oAuth2UserService.loadUser(userRequest);
+		
+		System.out.println(oAuth2User);
 		
 		String registationId = userRequest.getClientRegistration().getRegistrationId();
 		
@@ -60,6 +65,30 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
 					.build()
 		);
 		
+	}
+	
+	
+	public boolean checkPassword(String email, String password) {
+		User userEntity = userRepository.findUserByEmail(email);
+		
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		
+		return passwordEncoder.matches(password, userEntity.getPassword());
+	}
+	
+	
+	public int oAuth2ProviderMerge(OAuth2ProviderMergeReqDto oAuth2ProviderMergeReqDto) {
+		User userEntity = userRepository.findUserByEmail(oAuth2ProviderMergeReqDto.getEmail());
+		
+		String provider = oAuth2ProviderMergeReqDto.getProvider();
+		
+		if(StringUtils.hasText(userEntity.getProvider())) {
+			userEntity.setProvider(userEntity.getProvider() + "," + provider);
+		}else {
+			userEntity.setProvider(provider);
+		}
+		
+		return userRepository.updateProvider(userEntity);
 	}
 
 	

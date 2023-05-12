@@ -14,4 +14,5 @@ public interface UserRepository {
 	// 회원가입
 	public int saveUser(User user);
 	public int saveAuthority(Authority authority);
+	public int updateProvider(User user);
 }

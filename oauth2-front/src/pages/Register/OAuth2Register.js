@@ -2,8 +2,6 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FcSportsMode } from 'react-icons/fc';
-import SelectSportsModal from '../../components/Modal/SelectSportsModal';
 
 const OAuth2Register = () => {
 
